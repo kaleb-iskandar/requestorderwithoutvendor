@@ -2,7 +2,7 @@
 
 ## Features
 
-Description of the module...
+This module allow to create Purchase Request, which is a form before Supplier Purchase Order by input Warehouse Id, list of products name and quantity
 
 <!--
 ![Screenshot requestorderwithoutvendor](img/screenshot_requestorderwithoutvendor.png?raw=true "RequestOrderWithoutVendor"){imgmd}
@@ -83,4 +83,4 @@ GPLv3 or (at your option) any later version. See file COPYING for more informati
 
 ### Documentation
 
-All texts and readmes are licensed under GFDL.
+This module required Product, Stock, Third-party and Vendor

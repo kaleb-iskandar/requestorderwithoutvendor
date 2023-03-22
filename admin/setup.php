@@ -76,7 +76,7 @@ $modulepart = GETPOST('modulepart', 'aZ09');	// Used by actions_setmoduleoptions
 $value = GETPOST('value', 'alpha');
 $label = GETPOST('label', 'alpha');
 $scandir = GETPOST('scan_dir', 'alpha');
-$type = 'myobject';
+$type = 'requestpurchaseorder';
 
 
 $error = 0;
@@ -316,7 +316,7 @@ if ($action == 'edit') {
 $moduledir = 'requestorderwithoutvendor';
 $myTmpObjects = array();
 // TODO Scan list of objects
-$myTmpObjects['myobject'] = array('label'=>'MyObject', 'includerefgeneration'=>0, 'includedocgeneration'=>0);
+$myTmpObjects['requestpurchaseorder'] = array('label'=>'RequestPurchaseOrder', 'includerefgeneration'=>1, 'includedocgeneration'=>0);
 
 
 foreach ($myTmpObjects as $myTmpObjectKey => $myTmpObjectArray) {
@@ -328,7 +328,7 @@ foreach ($myTmpObjects as $myTmpObjectKey => $myTmpObjectArray) {
 		 * Orders Numbering model
 		 */
 		$setupnotempty++;
-
+		
 		print load_fiche_titre($langs->trans("NumberingModules", $myTmpObjectArray['label']), '', '');
 
 		print '<table class="noborder centpercent">';
@@ -347,11 +347,11 @@ foreach ($myTmpObjects as $myTmpObjectKey => $myTmpObjectArray) {
 
 			if (is_dir($dir)) {
 				$handle = opendir($dir);
-				if (is_resource($handle)) {
+				if (is_resource($handle)) {										
 					while (($file = readdir($handle)) !== false) {
 						if (strpos($file, 'mod_'.strtolower($myTmpObjectKey).'_') === 0 && substr($file, dol_strlen($file) - 3, 3) == 'php') {
 							$file = substr($file, 0, dol_strlen($file) - 4);
-
+							
 							require_once $dir.'/'.$file.'.php';
 
 							$module = new $file($db);

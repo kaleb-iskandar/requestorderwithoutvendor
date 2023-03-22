@@ -63,7 +63,7 @@ class modRequestOrderWithoutVendor extends DolibarrModules
 		$this->name = preg_replace('/^mod/i', '', get_class($this));
 
 		// Module description, used if translation string 'ModuleRequestOrderWithoutVendorDesc' not found (RequestOrderWithoutVendor is name of module).
-		$this->description = "RequestOrderWithoutVendorDescription";
+		$this->description = "Allow to create Purchase Request";
 		// Used only if file README.md and README-LL.md not found.
 		$this->descriptionlong = "RequestOrderWithoutVendorDescription";
 
@@ -136,7 +136,7 @@ class modRequestOrderWithoutVendor extends DolibarrModules
 		// A condition to hide module
 		$this->hidden = false;
 		// List of module class names as string that must be enabled if this module is enabled. Example: array('always1'=>'modModuleToEnable1','always2'=>'modModuleToEnable2', 'FR1'=>'modModuleToEnableFR'...)
-		$this->depends = array();
+		$this->depends = array('Societe'=>'modSociete','Product'=>'modProduct', 'Stock'=>'modStock');
 		$this->requiredby = array(); // List of module class names as string to disable if this one is disabled. Example: array('modModuleToDisable1', ...)
 		$this->conflictwith = array(); // List of module class names as string this module is in conflict with. Example: array('modModuleToDisable1', ...)
 
@@ -172,7 +172,7 @@ class modRequestOrderWithoutVendor extends DolibarrModules
 		}
 
 		// Array to add new pages in new tabs
-		$this->tabs = array();
+		$this->tabs[] = array('data'=>'objecttype:+tabname1:Title1:mylangfile@requestorderwithoutvendor:$user->rights->requestorderwithoutvendor->read:/requestorderwithoutvendor/mynewtab1.php?id=__ID__');
 		// Example:
 		// $this->tabs[] = array('data'=>'objecttype:+tabname1:Title1:mylangfile@requestorderwithoutvendor:$user->rights->requestorderwithoutvendor->read:/requestorderwithoutvendor/mynewtab1.php?id=__ID__');  					// To add a new tab identified by code tabname1
 		// $this->tabs[] = array('data'=>'objecttype:+tabname2:SUBSTITUTION_Title2:mylangfile@requestorderwithoutvendor:$user->rights->othermodule->read:/requestorderwithoutvendor/mynewtab2.php?id=__ID__',  	// To add another new tab identified by code tabname2. Label will be result of calling all substitution functions on 'Title2' key.

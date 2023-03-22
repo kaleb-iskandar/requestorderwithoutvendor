@@ -100,7 +100,7 @@ class mod_requestpurchaseorder_advanced extends ModeleNumRefRequestPurchaseOrder
 
 		$object = new RequestPurchaseOrder($db);
 		$object->initAsSpecimen();
-
+		var_dump($object);
 		/*$old_code_client = $mysoc->code_client;
 		$old_code_type = $mysoc->typent_code;
 		$mysoc->code_client = 'CCCCCCCCCC';
