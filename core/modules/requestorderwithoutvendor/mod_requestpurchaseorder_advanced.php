@@ -100,7 +100,7 @@ class mod_requestpurchaseorder_advanced extends ModeleNumRefRequestPurchaseOrder
 
 		$object = new RequestPurchaseOrder($db);
 		$object->initAsSpecimen();
-		var_dump($object);
+		//var_dump($object);
 		/*$old_code_client = $mysoc->code_client;
 		$old_code_type = $mysoc->typent_code;
 		$mysoc->code_client = 'CCCCCCCCCC';
@@ -139,7 +139,7 @@ class mod_requestpurchaseorder_advanced extends ModeleNumRefRequestPurchaseOrder
 
 		$date = $object->date;
 
-		$numFinal = get_next_value($db, $mask, 'requestorderwithoutvendor_requestpurchaseorder', 'ref', '', null, $date);
+		$numFinal = get_next_value($db, $mask, 'requestorderwithoutvendor_requestpurchaseorder', 'ref', '', null, $date,'next',false);
 
 		return  $numFinal;
 	}

@@ -245,6 +245,28 @@ class RequestPurchaseOrder extends CommonObject
 	 */
 	public function create(User $user, $notrigger = false)
 	{
+		global $conf;
+
+		if (empty($this->ref) || $this->ref == 'auto') {
+			// Load object modRequestOrderWithoutVendor
+			$module = (!empty($conf->global->REQUESTORDERWITHOUTVENDOR_REQUESTPURCHASEORDER_ADDON) ? $conf->global->REQUESTORDERWITHOUTVENDOR_REQUESTPURCHASEORDER_ADDON : 'mod_requestpurchaseorder_standard');
+			if ($module != 'mod_requestpurchaseorder_standard') {    // Do not load module file for standard
+				if (substr($module, 0, 16) == 'mod_requestpurchaseorder_' && substr($module, -3) == 'php') {
+					$module = substr($module, 0, dol_strlen($module) - 4);
+				}
+				dol_include_once('/custom/requestorderwithoutvendor/core/modules/requestorderwithoutvendor/'.$module.'.php');
+				$modCodeRequestPR = new $module;
+				if (!empty($modCodeRequestPR)) {
+					$this->ref = $modCodeRequestPR->getNextValue($this);
+				}
+				unset($modCodeRequestPR);
+			}
+
+			if (empty($this->ref)) {
+				$this->error = 'ProductModuleNotSetupForAutoRef';
+				return -2;
+			}
+		}
 		$resultcreate = $this->createCommon($user, $notrigger);
 
 		//$resultvalidate = $this->validate($user, $notrigger);
