@@ -17,21 +17,20 @@
  */
 
 /**
- * \file        class/requestpurchaseorder.class.php
+ * \file        class/requestpurchaseorderline.class.php
  * \ingroup     requestorderwithoutvendor
- * \brief       This file is a CRUD class file for RequestPurchaseOrder (Create/Read/Update/Delete)
+ * \brief       This file is a CRUD class file for RequestPurchaseOrderLine (Create/Read/Update/Delete)
  */
 
 // Put here all includes required by your class file
 require_once DOL_DOCUMENT_ROOT.'/core/class/commonobject.class.php';
-require_once 'requestpurchaseorderline.class.php';
 //require_once DOL_DOCUMENT_ROOT . '/societe/class/societe.class.php';
 //require_once DOL_DOCUMENT_ROOT . '/product/class/product.class.php';
 
 /**
- * Class for RequestPurchaseOrder
+ * Class for RequestPurchaseOrderLine
  */
-class RequestPurchaseOrder extends CommonObject
+class RequestPurchaseOrderLine extends CommonObject
 {
 	/**
 	 * @var string ID of module.
@@ -41,12 +40,12 @@ class RequestPurchaseOrder extends CommonObject
 	/**
 	 * @var string ID to identify managed object.
 	 */
-	public $element = 'requestpurchaseorder';
+	public $element = 'requestpurchaseorderline';
 
 	/**
 	 * @var string Name of table without prefix where object is stored. This is also the key used for extrafields management.
 	 */
-	public $table_element = 'requestorderwithoutvendor_requestpurchaseorder';
+	public $table_element = 'requestorderwithoutvendor_requestpurchaseorderline';
 
 	/**
 	 * @var int  Does this object support multicompany module ?
@@ -60,22 +59,14 @@ class RequestPurchaseOrder extends CommonObject
 	public $isextrafieldmanaged = 1;
 
 	/**
-	 * @var string String with name of icon for requestpurchaseorder. Must be a 'fa-xxx' fontawesome code (or 'fa-xxx_fa_color_size') or 'requestpurchaseorder@requestorderwithoutvendor' if picto is file 'img/object_requestpurchaseorder.png'.
+	 * @var string String with name of icon for requestpurchaseorderline. Must be a 'fa-xxx' fontawesome code (or 'fa-xxx_fa_color_size') or 'requestpurchaseorderline@requestorderwithoutvendor' if picto is file 'img/object_requestpurchaseorderline.png'.
 	 */
 	public $picto = 'fa-file';
 
 
 	const STATUS_DRAFT = 0;
-	const STATUS_ACCEPTED = 1;
-	const STATUS_REJECTED = 2;
-	const STATUS_ORDERED = 3;
-	const STATUS_PROCESSED_PARTIALLY = 4;
-	const STATUS_PROCESSED_ALL = 5;
-	const STATUS_DELIVERED_PARTIALLY = 6;
-	const STATUS_DELIVERED_ALL = 7;
-	const STATUS_PAID_PARTIALLY = 8;
-	const STATUS_PAID_ALL = 9;
-	const STATUS_CANCELED = 10;
+	const STATUS_VALIDATED = 1;
+	const STATUS_CANCELED = 9;
 
 
 	/**
@@ -123,9 +114,10 @@ class RequestPurchaseOrder extends CommonObject
 	 */
 	public $fields=array(
 		'rowid' => array('type'=>'integer', 'label'=>'TechnicalID', 'enabled'=>'1', 'position'=>1, 'notnull'=>1, 'visible'=>0, 'noteditable'=>'1', 'index'=>1, 'css'=>'left', 'comment'=>"Id"),
-		'ref' => array('type'=>'varchar(128)', 'label'=>'Ref', 'enabled'=>'1', 'position'=>20, 'notnull'=>1, 'visible'=>4, 'noteditable'=>'1', 'default'=>'PR', 'index'=>1, 'searchall'=>1, 'validate'=>'1', 'comment'=>"Reference of object"),
-		'label' => array('type'=>'varchar(255)', 'label'=>'Label', 'enabled'=>'1', 'position'=>30, 'notnull'=>0, 'visible'=>1, 'alwayseditable'=>'1', 'searchall'=>1, 'css'=>'minwidth300', 'cssview'=>'wordbreak', 'help'=>"Request Purchase Number", 'validate'=>'1',),
-		'fk_project' => array('type'=>'integer:Project:projet/class/project.class.php:1', 'label'=>'Project', 'enabled'=>'1', 'position'=>52, 'notnull'=>-1, 'visible'=>1, 'index'=>1, 'css'=>'maxwidth500 widthcentpercentminusxx', 'csslist'=>'tdoverflowmax150', 'validate'=>'1',),
+		'ref' => array('type'=>'varchar(128)', 'label'=>'Ref', 'enabled'=>'1', 'position'=>20, 'notnull'=>1, 'visible'=>1, 'index'=>1, 'searchall'=>1, 'showoncombobox'=>'1', 'validate'=>'1', 'comment'=>"Reference of object"),
+		'label' => array('type'=>'varchar(255)', 'label'=>'Label', 'enabled'=>'1', 'position'=>30, 'notnull'=>0, 'visible'=>1, 'alwayseditable'=>'1', 'searchall'=>1, 'css'=>'minwidth300', 'cssview'=>'wordbreak', 'help'=>"Product Name", 'validate'=>'1',),
+		'qty' => array('type'=>'real', 'label'=>'Qty', 'enabled'=>'1', 'position'=>45, 'notnull'=>0, 'visible'=>1, 'default'=>'0', 'isameasure'=>'1', 'css'=>'maxwidth75imp', 'help'=>"Help text for quantity", 'validate'=>'1',),
+		'fk_project' => array('type'=>'integer:Project:projet/class/project.class.php:1', 'label'=>'Project', 'picto'=>'project', 'enabled'=>'$conf->project->enabled', 'position'=>52, 'notnull'=>-1, 'visible'=>-1, 'index'=>1, 'css'=>'maxwidth500 widthcentpercentminusxx', 'csslist'=>'tdoverflowmax150', 'validate'=>'1',),
 		'description' => array('type'=>'text', 'label'=>'Description', 'enabled'=>'1', 'position'=>60, 'notnull'=>0, 'visible'=>3, 'validate'=>'1',),
 		'note_public' => array('type'=>'html', 'label'=>'NotePublic', 'enabled'=>'1', 'position'=>61, 'notnull'=>0, 'visible'=>0, 'cssview'=>'wordbreak', 'validate'=>'1',),
 		'note_private' => array('type'=>'html', 'label'=>'NotePrivate', 'enabled'=>'1', 'position'=>62, 'notnull'=>0, 'visible'=>0, 'cssview'=>'wordbreak', 'validate'=>'1',),
@@ -136,12 +128,32 @@ class RequestPurchaseOrder extends CommonObject
 		'last_main_doc' => array('type'=>'varchar(255)', 'label'=>'LastMainDoc', 'enabled'=>'1', 'position'=>600, 'notnull'=>0, 'visible'=>0,),
 		'import_key' => array('type'=>'varchar(14)', 'label'=>'ImportId', 'enabled'=>'1', 'position'=>1000, 'notnull'=>-1, 'visible'=>-2,),
 		'model_pdf' => array('type'=>'varchar(255)', 'label'=>'Model pdf', 'enabled'=>'1', 'position'=>1010, 'notnull'=>-1, 'visible'=>0,),
-		'status' => array('type'=>'integer', 'label'=>'Status', 'enabled'=>'1', 'position'=>2000, 'notnull'=>1, 'visible'=>4, 'default'=>'0', 'index'=>1, 'arrayofkeyval'=>array('0'=>'Draft', '1'=>'Accepted', '2'=>'Rejected', '3'=>'Ordered', '4'=>'Processed Partially', '5'=>'Processed All', '6'=>'Delivered Partially', '7'=>'Delivered All', '8'=>'Paid Partially', '9'=>'Paid All', '10'=>'Cancelled'), 'validate'=>'1',),
-		'fk_warehouse' => array('type'=>'integer:Entrepot:product/stock/class/entrepot.class.php:1', 'label'=>'Warehouse', 'enabled'=>'1', 'position'=>31, 'notnull'=>1, 'visible'=>1, 'index'=>1, 'validate'=>'1', 'comment'=>"Id of Warehouse"),
+		'price' => array('type'=>'integer', 'label'=>'price', 'enabled'=>'1', 'position'=>35, 'notnull'=>0, 'visible'=>1, 'help'=>"Item unit price",),
+		'fk_product' => array('type'=>'integer:Product:product/class/product.class.php:1', 'label'=>'Product', 'enabled'=>'1', 'position'=>11, 'notnull'=>1, 'visible'=>-1,),
+		'subprice' => array('type'=>'double(24,8)', 'label'=>'Subprice', 'enabled'=>'1', 'position'=>50, 'notnull'=>0, 'visible'=>-1,),
+		'remise_percent' => array('type'=>'real', 'label'=>'RemisePercent', 'enabled'=>'1', 'position'=>51, 'notnull'=>0, 'visible'=>-1,),
+		'total_ht' => array('type'=>'double(24,8)', 'label'=>'TotalHT', 'enabled'=>'1', 'position'=>50, 'notnull'=>0, 'visible'=>-1,),
+		'total_tva' => array('type'=>'double(24,8)', 'label'=>'TotalTVA', 'enabled'=>'1', 'position'=>50, 'notnull'=>0, 'visible'=>-1,),
+		'total_ttc' => array('type'=>'double(24,8)', 'label'=>'TotalTCC', 'enabled'=>'1', 'position'=>50, 'notnull'=>0, 'visible'=>-1,),
+		'total_localtax1' => array('type'=>'double(24,8)', 'label'=>'TotalLocalTax', 'enabled'=>'1', 'position'=>50, 'notnull'=>0, 'visible'=>-1,),
+		'total_localtax2' => array('type'=>'double(24,8)', 'label'=>'TotalLocalTax2', 'enabled'=>'1', 'position'=>50, 'notnull'=>0, 'visible'=>-1,),
+		'tva_tx' => array('type'=>'double(7,4)', 'label'=>'TVATX', 'enabled'=>'1', 'position'=>50, 'notnull'=>0, 'visible'=>-1,),
+		'localtax1_tx' => array('type'=>'double(7,4)', 'label'=>'LocalTax1Tx', 'enabled'=>'1', 'position'=>50, 'notnull'=>0, 'visible'=>-1, 'default'=>'0',),
+		'localtax2_tx' => array('type'=>'double(7,4)', 'label'=>'LocalTax2Tx', 'enabled'=>'1', 'position'=>50, 'notnull'=>0, 'visible'=>-1, 'default'=>'0',),
+		'localtax1_type' => array('type'=>'varchar(10)', 'label'=>'LocalTax1Type', 'enabled'=>'1', 'position'=>50, 'notnull'=>0, 'visible'=>-1,),
+		'localtax2_type' => array('type'=>'varchar(10)', 'label'=>'LocalTax2Type', 'enabled'=>'1', 'position'=>50, 'notnull'=>0, 'visible'=>-1,),
+		'info_bits' => array('type'=>'integer', 'label'=>'InfoBits', 'enabled'=>'1', 'position'=>50, 'notnull'=>0, 'visible'=>-1,),
+		'product_type' => array('type'=>'integer', 'label'=>'ProductType', 'enabled'=>'1', 'position'=>50, 'notnull'=>0, 'visible'=>-1, 'default'=>'0',),
+		'multicurrency_total_ht' => array('type'=>'double(24,8)', 'label'=>'MulticurrencyTotalHt', 'enabled'=>'1', 'position'=>50, 'notnull'=>0, 'visible'=>-1,),
+		'multicurrency_total_tva' => array('type'=>'double(24,8)', 'label'=>'MulticurrencyTotalTva', 'enabled'=>'1', 'position'=>50, 'notnull'=>0, 'visible'=>-1,),
+		'multicurrency_total_ttc' => array('type'=>'double(24,8)', 'label'=>'MulticurrencyTotalTtc', 'enabled'=>'1', 'position'=>50, 'notnull'=>0, 'visible'=>-1,),
+		'remise' => array('type'=>'real', 'label'=>'Remise', 'enabled'=>'1', 'position'=>51, 'notnull'=>0, 'visible'=>-1,),
+		'fk_requestpurchaseorder' => array('type'=>'integer:RequestPurchaseOrder:requestorderwithoutvender/class/purchaserequestorder.class.php:1', 'label'=>'RequestPurchaseOrder', 'enabled'=>'1', 'position'=>10, 'notnull'=>1, 'visible'=>-1, 'help'=>"Request Purchase Order Id",),
 	);
 	public $rowid;
 	public $ref;
 	public $label;
+	public $qty;
 	public $fk_project;
 	public $description;
 	public $note_public;
@@ -153,8 +165,27 @@ class RequestPurchaseOrder extends CommonObject
 	public $last_main_doc;
 	public $import_key;
 	public $model_pdf;
-	public $status;
-	public $fk_warehouse;
+	public $price;
+	public $fk_product;
+	public $subprice;
+	public $remise_percent;
+	public $total_ht;
+	public $total_tva;
+	public $total_ttc;
+	public $total_localtax1;
+	public $total_localtax2;
+	public $tva_tx;
+	public $localtax1_tx;
+	public $localtax2_tx;
+	public $localtax1_type;
+	public $localtax2_type;
+	public $info_bits;
+	public $product_type;
+	public $multicurrency_total_ht;
+	public $multicurrency_total_tva;
+	public $multicurrency_total_ttc;
+	public $remise;
+	public $fk_requestpurchaseorder;
 	// END MODULEBUILDER PROPERTIES
 
 
@@ -163,34 +194,34 @@ class RequestPurchaseOrder extends CommonObject
 	// /**
 	//  * @var string    Name of subtable line
 	//  */
-	public $table_element_line = 'requestorderwithoutvendor_requestpurchaseorderline';
+	// public $table_element_line = 'requestorderwithoutvendor_requestpurchaseorderlineline';
 
 	// /**
 	//  * @var string    Field with ID of parent key if this object has a parent
 	//  */
-	public $fk_element = 'fk_requestpurchaseorder';
+	// public $fk_element = 'fk_requestpurchaseorderline';
 
 	// /**
 	//  * @var string    Name of subtable class that manage subtable lines
 	//  */
-	public $class_element_line = 'RequestPurchaseOrderline';
+	// public $class_element_line = 'RequestPurchaseOrderLineline';
 
 	// /**
 	//  * @var array	List of child tables. To test if we can delete object.
 	//  */
-	protected $childtables = array();
+	// protected $childtables = array();
 
 	// /**
 	//  * @var array    List of child tables. To know object to delete on cascade.
 	//  *               If name matches '@ClassNAme:FilePathClass;ParentFkFieldName' it will
 	//  *               call method deleteByParentField(parentId, ParentFkFieldName) to fetch and delete child object
 	//  */
-	protected $childtablesoncascade = array('requestorderwithoutvendor_requestpurchaseorderdet');
+	// protected $childtablesoncascade = array('requestorderwithoutvendor_requestpurchaseorderlinedet');
 
-	/**
-	 * @var RequestPurchaseOrderLine[]     Array of subtable lines
-	 */
-	public $lines = array();
+	// /**
+	//  * @var RequestPurchaseOrderLineLine[]     Array of subtable lines
+	//  */
+	// public $lines = array();
 
 
 
@@ -213,7 +244,7 @@ class RequestPurchaseOrder extends CommonObject
 		}
 
 		// Example to show how to set values of fields definition dynamically
-		/*if ($user->rights->requestorderwithoutvendor->requestpurchaseorder->read) {
+		/*if ($user->rights->requestorderwithoutvendor->requestpurchaseorderline->read) {
 			$this->fields['myfield']['visible'] = 1;
 			$this->fields['myfield']['noteditable'] = 0;
 		}*/
@@ -240,34 +271,13 @@ class RequestPurchaseOrder extends CommonObject
 	/**
 	 * Create object into database
 	 *
-	 * @param  User $user      User that creates
 	 * @param  bool $notrigger false=launch triggers after, true=disable triggers
 	 * @return int             <0 if KO, Id of created object if OK
 	 */
-	public function create(User $user, $notrigger = false)
+	public function create($notrigger = false)
 	{
-		global $conf;
-
-		if (empty($this->ref) || $this->ref == 'auto') {
-			// Load object modRequestOrderWithoutVendor
-			$module = (!empty($conf->global->REQUESTORDERWITHOUTVENDOR_REQUESTPURCHASEORDER_ADDON) ? $conf->global->REQUESTORDERWITHOUTVENDOR_REQUESTPURCHASEORDER_ADDON : 'mod_requestpurchaseorder_standard');
-			if ($module != 'mod_requestpurchaseorder_standard') {    // Do not load module file for standard
-				if (substr($module, 0, 16) == 'mod_requestpurchaseorder_' && substr($module, -3) == 'php') {
-					$module = substr($module, 0, dol_strlen($module) - 4);
-				}
-				dol_include_once('/custom/requestorderwithoutvendor/core/modules/requestorderwithoutvendor/'.$module.'.php');
-				$modCodeRequestPR = new $module;
-				if (!empty($modCodeRequestPR)) {
-					$this->ref = $modCodeRequestPR->getNextValue($this);
-				}
-				unset($modCodeRequestPR);
-			}
-
-			if (empty($this->ref)) {
-				$this->error = 'ProductModuleNotSetupForAutoRef';
-				return -2;
-			}
-		}
+		global $conf, $user;
+				
 		$resultcreate = $this->createCommon($user, $notrigger);
 
 		//$resultvalidate = $this->validate($user, $notrigger);
@@ -545,13 +555,13 @@ class RequestPurchaseOrder extends CommonObject
 		$error = 0;
 
 		// Protection
-		if ($this->status == self::STATUS_ACCEPTED) {
+		if ($this->status == self::STATUS_VALIDATED) {
 			dol_syslog(get_class($this)."::validate action abandonned: already validated", LOG_WARNING);
 			return 0;
 		}
 
-		/*if (! ((empty($conf->global->MAIN_USE_ADVANCED_PERMS) && !empty($user->rights->requestorderwithoutvendor->requestpurchaseorder->write))
-		 || (!empty($conf->global->MAIN_USE_ADVANCED_PERMS) && !empty($user->rights->requestorderwithoutvendor->requestpurchaseorder->requestpurchaseorder_advance->validate))))
+		/*if (! ((empty($conf->global->MAIN_USE_ADVANCED_PERMS) && !empty($user->rights->requestorderwithoutvendor->requestpurchaseorderline->write))
+		 || (!empty($conf->global->MAIN_USE_ADVANCED_PERMS) && !empty($user->rights->requestorderwithoutvendor->requestpurchaseorderline->requestpurchaseorderline_advance->validate))))
 		 {
 		 $this->error='NotEnoughPermissions';
 		 dol_syslog(get_class($this)."::valid ".$this->error, LOG_ERR);
@@ -574,7 +584,7 @@ class RequestPurchaseOrder extends CommonObject
 			// Validate
 			$sql = "UPDATE ".MAIN_DB_PREFIX.$this->table_element;
 			$sql .= " SET ref = '".$this->db->escape($num)."',";
-			$sql .= " status = ".self::STATUS_ACCEPTED;
+			$sql .= " status = ".self::STATUS_VALIDATED;
 			if (!empty($this->fields['date_validation'])) {
 				$sql .= ", date_validation = '".$this->db->idate($now)."'";
 			}
@@ -593,7 +603,7 @@ class RequestPurchaseOrder extends CommonObject
 
 			if (!$error && !$notrigger) {
 				// Call trigger
-				$result = $this->call_trigger('REQUESTPURCHASEORDER_VALIDATE', $user);
+				$result = $this->call_trigger('REQUESTPURCHASEORDERLINE_VALIDATE', $user);
 				if ($result < 0) {
 					$error++;
 				}
@@ -607,8 +617,8 @@ class RequestPurchaseOrder extends CommonObject
 			// Rename directory if dir was a temporary ref
 			if (preg_match('/^[\(]?PROV/i', $this->ref)) {
 				// Now we rename also files into index
-				$sql = 'UPDATE '.MAIN_DB_PREFIX."ecm_files set filename = CONCAT('".$this->db->escape($this->newref)."', SUBSTR(filename, ".(strlen($this->ref) + 1).")), filepath = 'requestpurchaseorder/".$this->db->escape($this->newref)."'";
-				$sql .= " WHERE filename LIKE '".$this->db->escape($this->ref)."%' AND filepath = 'requestpurchaseorder/".$this->db->escape($this->ref)."' and entity = ".$conf->entity;
+				$sql = 'UPDATE '.MAIN_DB_PREFIX."ecm_files set filename = CONCAT('".$this->db->escape($this->newref)."', SUBSTR(filename, ".(strlen($this->ref) + 1).")), filepath = 'requestpurchaseorderline/".$this->db->escape($this->newref)."'";
+				$sql .= " WHERE filename LIKE '".$this->db->escape($this->ref)."%' AND filepath = 'requestpurchaseorderline/".$this->db->escape($this->ref)."' and entity = ".$conf->entity;
 				$resql = $this->db->query($sql);
 				if (!$resql) {
 					$error++; $this->error = $this->db->lasterror();
@@ -617,15 +627,15 @@ class RequestPurchaseOrder extends CommonObject
 				// We rename directory ($this->ref = old ref, $num = new ref) in order not to lose the attachments
 				$oldref = dol_sanitizeFileName($this->ref);
 				$newref = dol_sanitizeFileName($num);
-				$dirsource = $conf->requestorderwithoutvendor->dir_output.'/requestpurchaseorder/'.$oldref;
-				$dirdest = $conf->requestorderwithoutvendor->dir_output.'/requestpurchaseorder/'.$newref;
+				$dirsource = $conf->requestorderwithoutvendor->dir_output.'/requestpurchaseorderline/'.$oldref;
+				$dirdest = $conf->requestorderwithoutvendor->dir_output.'/requestpurchaseorderline/'.$newref;
 				if (!$error && file_exists($dirsource)) {
 					dol_syslog(get_class($this)."::validate() rename dir ".$dirsource." into ".$dirdest);
 
 					if (@rename($dirsource, $dirdest)) {
 						dol_syslog("Rename ok");
 						// Rename docs starting with $oldref with $newref
-						$listoffiles = dol_dir_list($conf->requestorderwithoutvendor->dir_output.'/requestpurchaseorder/'.$newref, 'files', 1, '^'.preg_quote($oldref, '/'));
+						$listoffiles = dol_dir_list($conf->requestorderwithoutvendor->dir_output.'/requestpurchaseorderline/'.$newref, 'files', 1, '^'.preg_quote($oldref, '/'));
 						foreach ($listoffiles as $fileentry) {
 							$dirsource = $fileentry['name'];
 							$dirdest = preg_replace('/^'.preg_quote($oldref, '/').'/', $newref, $dirsource);
@@ -641,7 +651,7 @@ class RequestPurchaseOrder extends CommonObject
 		// Set new ref and current status
 		if (!$error) {
 			$this->ref = $num;
-			$this->status = self::STATUS_ACCEPTED;
+			$this->status = self::STATUS_VALIDATED;
 		}
 
 		if (!$error) {
@@ -675,7 +685,7 @@ class RequestPurchaseOrder extends CommonObject
 		 return -1;
 		 }*/
 
-		return $this->setStatusCommon($user, self::STATUS_DRAFT, $notrigger, 'REQUESTPURCHASEORDER_UNVALIDATE');
+		return $this->setStatusCommon($user, self::STATUS_DRAFT, $notrigger, 'REQUESTPURCHASEORDERLINE_UNVALIDATE');
 	}
 
 	/**
@@ -688,7 +698,7 @@ class RequestPurchaseOrder extends CommonObject
 	public function cancel($user, $notrigger = 0)
 	{
 		// Protection
-		if ($this->status != self::STATUS_ACCEPTED) {
+		if ($this->status != self::STATUS_VALIDATED) {
 			return 0;
 		}
 
@@ -699,7 +709,7 @@ class RequestPurchaseOrder extends CommonObject
 		 return -1;
 		 }*/
 
-		return $this->setStatusCommon($user, self::STATUS_CANCELED, $notrigger, 'REQUESTPURCHASEORDER_CANCEL');
+		return $this->setStatusCommon($user, self::STATUS_CANCELED, $notrigger, 'REQUESTPURCHASEORDERLINE_CANCEL');
 	}
 
 	/**
@@ -712,7 +722,7 @@ class RequestPurchaseOrder extends CommonObject
 	public function reopen($user, $notrigger = 0)
 	{
 		// Protection
-		if ($this->status == self::STATUS_ACCEPTED) {
+		if ($this->status == self::STATUS_VALIDATED) {
 			return 0;
 		}
 
@@ -723,7 +733,7 @@ class RequestPurchaseOrder extends CommonObject
 		 return -1;
 		 }*/
 
-		return $this->setStatusCommon($user, self::STATUS_ACCEPTED, $notrigger, 'REQUESTPURCHASEORDER_REOPEN');
+		return $this->setStatusCommon($user, self::STATUS_VALIDATED, $notrigger, 'REQUESTPURCHASEORDERLINE_REOPEN');
 	}
 
 	/**
@@ -746,14 +756,14 @@ class RequestPurchaseOrder extends CommonObject
 
 		$result = '';
 
-		$label = img_picto('', $this->picto).' <u>'.$langs->trans("RequestPurchaseOrder").'</u>';
+		$label = img_picto('', $this->picto).' <u>'.$langs->trans("RequestPurchaseOrderLine").'</u>';
 		if (isset($this->status)) {
 			$label .= ' '.$this->getLibStatut(5);
 		}
 		$label .= '<br>';
 		$label .= '<b>'.$langs->trans('Ref').':</b> '.$this->ref;
 
-		$url = dol_buildpath('/requestorderwithoutvendor/requestpurchaseorder_card.php', 1).'?id='.$this->id;
+		$url = dol_buildpath('/requestorderwithoutvendor/requestpurchaseorderline_card.php', 1).'?id='.$this->id;
 
 		if ($option != 'nolink') {
 			// Add param to save lastsearch_values or not
@@ -769,7 +779,7 @@ class RequestPurchaseOrder extends CommonObject
 		$linkclose = '';
 		if (empty($notooltip)) {
 			if (!empty($conf->global->MAIN_OPTIMIZEFORTEXTBROWSER)) {
-				$label = $langs->trans("ShowRequestPurchaseOrder");
+				$label = $langs->trans("ShowRequestPurchaseOrderLine");
 				$linkclose .= ' alt="'.dol_escape_htmltag($label, 1).'"';
 			}
 			$linkclose .= ' title="'.dol_escape_htmltag($label, 1).'"';
@@ -908,15 +918,15 @@ class RequestPurchaseOrder extends CommonObject
 			global $langs;
 			//$langs->load("requestorderwithoutvendor@requestorderwithoutvendor");
 			$this->labelStatus[self::STATUS_DRAFT] = $langs->transnoentitiesnoconv('Draft');
-			$this->labelStatus[self::STATUS_ACCEPTED] = $langs->transnoentitiesnoconv('Enabled');
+			$this->labelStatus[self::STATUS_VALIDATED] = $langs->transnoentitiesnoconv('Enabled');
 			$this->labelStatus[self::STATUS_CANCELED] = $langs->transnoentitiesnoconv('Disabled');
 			$this->labelStatusShort[self::STATUS_DRAFT] = $langs->transnoentitiesnoconv('Draft');
-			$this->labelStatusShort[self::STATUS_ACCEPTED] = $langs->transnoentitiesnoconv('Enabled');
+			$this->labelStatusShort[self::STATUS_VALIDATED] = $langs->transnoentitiesnoconv('Enabled');
 			$this->labelStatusShort[self::STATUS_CANCELED] = $langs->transnoentitiesnoconv('Disabled');
 		}
 
 		$statusType = 'status'.$status;
-		//if ($status == self::STATUS_ACCEPTED) $statusType = 'status1';
+		//if ($status == self::STATUS_VALIDATED) $statusType = 'status1';
 		if ($status == self::STATUS_CANCELED) {
 			$statusType = 'status6';
 		}
@@ -986,9 +996,9 @@ class RequestPurchaseOrder extends CommonObject
 	public function getLinesArray()
 	{
 		$this->lines = array();
-		
-		$objectline = new RequestPurchaseOrderLine($this->db);
-		$result = $objectline->fetchAll('ASC', 'rowid', 0, 0, array('customsql'=>'fk_requestpurchaseorder = '.((int) $this->id)));
+
+		$objectline = new RequestPurchaseOrderLineLine($this->db);
+		$result = $objectline->fetchAll('ASC', 'position', 0, 0, array('customsql'=>'fk_requestpurchaseorderline = '.((int) $this->id)));
 
 		if (is_numeric($result)) {
 			$this->error = $objectline->error;
@@ -1010,15 +1020,15 @@ class RequestPurchaseOrder extends CommonObject
 		global $langs, $conf;
 		$langs->load("requestorderwithoutvendor@requestorderwithoutvendor");
 
-		if (empty($conf->global->REQUESTORDERWITHOUTVENDOR_REQUESTPURCHASEORDER_ADDON)) {
-			$conf->global->REQUESTORDERWITHOUTVENDOR_REQUESTPURCHASEORDER_ADDON = 'mod_requestpurchaseorder_standard';
+		if (empty($conf->global->REQUESTORDERWITHOUTVENDOR_REQUESTPURCHASEORDERLINE_ADDON)) {
+			$conf->global->REQUESTORDERWITHOUTVENDOR_REQUESTPURCHASEORDERLINE_ADDON = 'mod_requestpurchaseorderline_standard';
 		}
 
-		if (!empty($conf->global->REQUESTORDERWITHOUTVENDOR_REQUESTPURCHASEORDER_ADDON)) {
+		if (!empty($conf->global->REQUESTORDERWITHOUTVENDOR_REQUESTPURCHASEORDERLINE_ADDON)) {
 			$mybool = false;
 
-			$file = $conf->global->REQUESTORDERWITHOUTVENDOR_REQUESTPURCHASEORDER_ADDON.".php";
-			$classname = $conf->global->REQUESTORDERWITHOUTVENDOR_REQUESTPURCHASEORDER_ADDON;
+			$file = $conf->global->REQUESTORDERWITHOUTVENDOR_REQUESTPURCHASEORDERLINE_ADDON.".php";
+			$classname = $conf->global->REQUESTORDERWITHOUTVENDOR_REQUESTPURCHASEORDERLINE_ADDON;
 
 			// Include file with class
 			$dirmodels = array_merge(array('/'), (array) $conf->modules_parts['models']);
@@ -1076,12 +1086,12 @@ class RequestPurchaseOrder extends CommonObject
 		$langs->load("requestorderwithoutvendor@requestorderwithoutvendor");
 
 		if (!dol_strlen($modele)) {
-			$modele = 'standard_requestpurchaseorder';
+			$modele = 'standard_requestpurchaseorderline';
 
 			if (!empty($this->model_pdf)) {
 				$modele = $this->model_pdf;
-			} elseif (!empty($conf->global->REQUESTPURCHASEORDER_ADDON_PDF)) {
-				$modele = $conf->global->REQUESTPURCHASEORDER_ADDON_PDF;
+			} elseif (!empty($conf->global->REQUESTPURCHASEORDERLINE_ADDON_PDF)) {
+				$modele = $conf->global->REQUESTPURCHASEORDERLINE_ADDON_PDF;
 			}
 		}
 
@@ -1123,307 +1133,6 @@ class RequestPurchaseOrder extends CommonObject
 
 		return $error;
 	}
-
-		/**
-	 *	Add order line
-	 *
-	 *	@param      string	$desc            		Description
-	 *	@param      float	$pu_ht              	Unit price (used if $price_base_type is 'HT')
-	 *	@param      float	$qty             		Quantity
-	 *	@param      float	$txtva           		Taux tva
-	 *	@param      float	$txlocaltax1        	Localtax1 tax
-	 *  @param      float	$txlocaltax2        	Localtax2 tax
-	 *	@param      int		$fk_product      		Id product
-	 *  @param      int		$fk_prod_fourn_price	Id supplier price
-	 *  @param      string	$ref_supplier			Supplier reference price
-	 *	@param      float	$remise_percent  		Remise
-	 *	@param      string	$price_base_type		HT or TTC
-	 *	@param		float	$pu_ttc					Unit price TTC (used if $price_base_type is 'TTC')
-	 *	@param		int		$type					Type of line (0=product, 1=service)
-	 *	@param		int		$info_bits				More information
-	 *  @param		bool	$notrigger				Disable triggers
-	 *  @param		int		$date_start				Date start of service
-	 *  @param		int		$date_end				Date end of service
-	 *  @param		array	$array_options			extrafields array
-	 *  @param 		string	$fk_unit 				Code of the unit to use. Null to use the default one
-	 *  @param 		string	$pu_ht_devise			Amount in currency
-	 *  @param		string	$origin					'order', ...
-	 *  @param		int		$origin_id				Id of origin object
-	 *  @param		int		$rang					Rank
-	 * 	@param		int		$special_code			Special code
-	 *	@return     int             				<=0 if KO, >0 if OK
-	 */
-	public function addline($fk_warehouse,$fk_purchaserequest,$desc, $pu_ht, $qty, $txtva, $txlocaltax1 = 0.0, $txlocaltax2 = 0.0, $fk_product = 0, $fk_prod_fourn_price = 0, $ref_supplier = '', $remise_percent = 0.0, $price_base_type = 'HT', $pu_ttc = 0.0, $type = 0, $info_bits = 0, $notrigger = false, $date_start = null, $date_end = null, $array_options = 0, $fk_unit = null, $pu_ht_devise = 0, $origin = '', $origin_id = 0, $rang = -1, $special_code = 0)
-	{
-		global $langs, $mysoc, $conf;
-
-		dol_syslog(get_class($this)."::addline $desc, $pu_ht, $qty, $txtva, $txlocaltax1, $txlocaltax2, $fk_product, $fk_prod_fourn_price, $ref_supplier, $remise_percent, $price_base_type, $pu_ttc, $type, $info_bits, $notrigger, $date_start, $date_end, $fk_unit, $pu_ht_devise, $origin, $origin_id");
-		include_once DOL_DOCUMENT_ROOT.'/core/lib/price.lib.php';
-
-		if ($this->statut == self::STATUS_DRAFT) {
-			include_once DOL_DOCUMENT_ROOT.'/core/lib/price.lib.php';
-
-			// Clean parameters
-			if (empty($qty)) {
-				$qty = 0;
-			}
-			if (!$info_bits) {
-				$info_bits = 0;
-			}
-			if (empty($txtva)) {
-				$txtva = 0;
-			}
-			if (empty($rang)) {
-				$rang = 0;
-			}
-			if (empty($txlocaltax1)) {
-				$txlocaltax1 = 0;
-			}
-			if (empty($txlocaltax2)) {
-				$txlocaltax2 = 0;
-			}
-			if (empty($remise_percent)) {
-				$remise_percent = 0;
-			}
-
-			$remise_percent = price2num($remise_percent);
-			$qty = price2num($qty);
-			$pu_ht = price2num($pu_ht);
-			$pu_ht_devise = price2num($pu_ht_devise);
-			$pu_ttc = price2num($pu_ttc);
-			if (!preg_match('/\((.*)\)/', $txtva)) {
-				$txtva = price2num($txtva); // $txtva can have format '5.0(XXX)' or '5'
-			}
-			$txlocaltax1 = price2num($txlocaltax1);
-			$txlocaltax2 = price2num($txlocaltax2);
-			if ($price_base_type == 'HT') {
-				$pu = $pu_ht;
-			} else {
-				$pu = $pu_ttc;
-			}
-			$desc = trim($desc);
-
-			// Check parameters
-			if ($qty < 0 && !$fk_product) {
-				$this->error = $langs->trans("ErrorFieldRequired", $langs->transnoentitiesnoconv("Product"));
-				return -1;
-			}
-			if ($type < 0) {
-				return -1;
-			}
-			if ($date_start && $date_end && $date_start > $date_end) {
-				$langs->load("errors");
-				$this->error = $langs->trans('ErrorStartDateGreaterEnd');
-				return -1;
-			}
-
-
-			$this->db->begin();
-
-			$product_type = $type;
-			$label = '';	// deprecated
-
-			if ($fk_product > 0) {
-				if (!empty($conf->global->SUPPLIER_ORDER_WITH_PREDEFINED_PRICES_ONLY)) {	// Not the common case
-					// Check quantity is enough
-					dol_syslog(get_class($this)."::addline we check supplier prices fk_product=".$fk_product." fk_prod_fourn_price=".$fk_prod_fourn_price." qty=".$qty." ref_supplier=".$ref_supplier);
-					$prod = new ProductFournisseur($this->db);
-					if ($prod->fetch($fk_product) > 0) {
-						$product_type = $prod->type;
-						$label = $prod->label;
-
-						// We use 'none' instead of $ref_supplier, because fourn_ref may not exists anymore. So we will take the first supplier price ok.
-						// If we want a dedicated supplier price, we must provide $fk_prod_fourn_price.
-						$result = $prod->get_buyprice($fk_prod_fourn_price, $qty, $fk_product, 'none', (isset($this->fk_soc) ? $this->fk_soc : $this->socid)); // Search on couple $fk_prod_fourn_price/$qty first, then on triplet $qty/$fk_product/$ref_supplier/$this->fk_soc
-
-						// If supplier order created from sales order, we take best supplier price
-						// If $pu (defined previously from pu_ht or pu_ttc) is not defined at all, we also take the best supplier price
-						if ($result > 0 && ($origin == 'commande' || $pu === '')) {
-							$pu = $prod->fourn_pu; // Unit price supplier price set by get_buyprice
-							$ref_supplier = $prod->ref_supplier; // Ref supplier price set by get_buyprice
-							// is remise percent not keyed but present for the product we add it
-							if ($remise_percent == 0 && $prod->remise_percent != 0) {
-								$remise_percent = $prod->remise_percent;
-							}
-						}
-						if ($result == 0) {                   // If result == 0, we failed to found the supplier reference price
-							$langs->load("errors");
-							$this->error = "Ref ".$prod->ref." ".$langs->trans("ErrorQtyTooLowForThisSupplier");
-							$this->db->rollback();
-							dol_syslog(get_class($this)."::addline we did not found supplier price, so we can't guess unit price");
-							//$pu    = $prod->fourn_pu;     // We do not overwrite unit price
-							//$ref   = $prod->ref_fourn;    // We do not overwrite ref supplier price
-							return -1;
-						}
-						if ($result == -1) {
-							$langs->load("errors");
-							$this->error = "Ref ".$prod->ref." ".$langs->trans("ErrorQtyTooLowForThisSupplier");
-							$this->db->rollback();
-							dol_syslog(get_class($this)."::addline result=".$result." - ".$this->error, LOG_DEBUG);
-							return -1;
-						}
-						if ($result < -1) {
-							$this->error = $prod->error;
-							$this->db->rollback();
-							dol_syslog(get_class($this)."::addline result=".$result." - ".$this->error, LOG_ERR);
-							return -1;
-						}
-					} else {
-						$this->error = $prod->error;
-						$this->db->rollback();
-						return -1;
-					}
-				}
-
-				// Predefine quantity according to packaging
-				if (!empty($conf->global->PRODUCT_USE_SUPPLIER_PACKAGING)) {
-					$prod = new Product($this->db);
-					$prod->get_buyprice($fk_prod_fourn_price, $qty, $fk_product, 'none', ($this->fk_soc ? $this->fk_soc : $this->socid));
-
-					if ($qty < $prod->packaging) {
-						$qty = $prod->packaging;
-					} else {
-						if (!empty($prod->packaging) && ($qty % $prod->packaging) > 0) {
-							$coeff = intval($qty / $prod->packaging) + 1;
-							$qty = $prod->packaging * $coeff;
-							setEventMessages($langs->trans('QtyRecalculatedWithPackaging'), null, 'mesgs');
-						}
-					}
-				}
-				// Set label from product if empty
-				if($label===""){
-					$prod = new Product($this->$db);
-					$prod->fetch($this->$fk_product);
-					$label = $prod->label;
-				}
-			}
-
-			if (isModEnabled("multicurrency") && $pu_ht_devise > 0) {
-				$pu = 0;
-			}
-
-			$localtaxes_type = getLocalTaxesFromRate($txtva, 0, $mysoc, $this->thirdparty);
-
-			// Clean vat code
-			$reg = array();
-			$vat_src_code = '';
-			if (preg_match('/\((.*)\)/', $txtva, $reg)) {
-				$vat_src_code = $reg[1];
-				$txtva = preg_replace('/\s*\(.*\)/', '', $txtva); // Remove code into vatrate.
-			}
-
-			// Calcul du total TTC et de la TVA pour la ligne a partir de
-			// qty, pu, remise_percent et txtva
-			// TRES IMPORTANT: C'est au moment de l'insertion ligne qu'on doit stocker
-			// la part ht, tva et ttc, et ce au niveau de la ligne qui a son propre taux tva.
-
-			$tabprice = calcul_price_total($qty, $pu, $remise_percent, $txtva, $txlocaltax1, $txlocaltax2, 0, $price_base_type, $info_bits, $product_type, $this->thirdparty, $localtaxes_type, 100, $this->multicurrency_tx, $pu_ht_devise);
-
-			$total_ht  = $tabprice[0];
-			$total_tva = $tabprice[1];
-			$total_ttc = $tabprice[2];
-			$total_localtax1 = $tabprice[9];
-			$total_localtax2 = $tabprice[10];
-			$pu = $pu_ht = $tabprice[3];
-
-			// MultiCurrency
-			$multicurrency_total_ht = $tabprice[16];
-			$multicurrency_total_tva = $tabprice[17];
-			$multicurrency_total_ttc = $tabprice[18];
-			$pu_ht_devise = $tabprice[19];
-
-			$localtax1_type = empty($localtaxes_type[0]) ? '' : $localtaxes_type[0];
-			$localtax2_type = empty($localtaxes_type[2]) ? '' : $localtaxes_type[2];
-
-			if ($rang < 0) {
-				$rangmax = $this->line_max();
-				$rang = $rangmax + 1;
-			}
-
-			// Insert line
-			$this->line = new RequestPurchaseOrderLine($this->db);
-
-			$this->line->context = $this->context;
-			$this->line->fk_requestpurchaseorder = $this->id;
-			$this->line->fk_warehouse = $fk_warehouse;
-			$this->line->label = $label;
-			$this->line->ref_fourn = $ref_supplier;
-			$this->line->ref_supplier = $ref_supplier;
-			$this->line->desc = $desc;
-			$this->line->qty = $qty;
-			$this->line->tva_tx = $txtva;
-			$this->line->localtax1_tx = ($total_localtax1 ? $localtaxes_type[1] : 0);
-			$this->line->localtax2_tx = ($total_localtax2 ? $localtaxes_type[3] : 0);
-			$this->line->localtax1_type = $localtax1_type;
-			$this->line->localtax2_type = $localtax2_type;
-			$this->line->fk_product = $fk_product;
-			$this->line->product_type = $product_type;
-			$this->line->remise_percent = $remise_percent;
-			$this->line->subprice = $pu_ht;
-			$this->line->rang = $rang;
-			$this->line->info_bits = $info_bits;
-
-			$this->line->vat_src_code = $vat_src_code;
-			$this->line->total_ht = $total_ht;
-			$this->line->total_tva = $total_tva;
-			$this->line->total_localtax1 = $total_localtax1;
-			$this->line->total_localtax2 = $total_localtax2;
-			$this->line->total_ttc = $total_ttc;
-			$this->line->product_type = $type;
-			$this->line->special_code   = (!empty($this->special_code) ? $this->special_code : 0);
-			$this->line->origin = $origin;
-			$this->line->origin_id = $origin_id;
-			$this->line->fk_unit = $fk_unit;
-
-			$this->line->date_start = $date_start;
-			$this->line->date_end = $date_end;
-
-			// Multicurrency
-			$this->line->fk_multicurrency = $this->fk_multicurrency;
-			$this->line->multicurrency_code = $this->multicurrency_code;
-			$this->line->multicurrency_subprice		= $pu_ht_devise;
-			$this->line->multicurrency_total_ht 	= $multicurrency_total_ht;
-			$this->line->multicurrency_total_tva 	= $multicurrency_total_tva;
-			$this->line->multicurrency_total_ttc 	= $multicurrency_total_ttc;
-
-			$this->line->subprice = $pu_ht;
-			$this->line->price = $this->line->subprice;
-
-			$this->line->remise_percent = $remise_percent;
-
-			if (is_array($array_options) && count($array_options) > 0) {
-				$this->line->array_options = $array_options;
-			}
-
-			$result = $this->line->create();
-			if ($result > 0) {
-				// Reorder if child line
-				if (!empty($fk_parent_line)) {
-					$this->line_order(true, 'DESC');
-				} elseif ($rang > 0 && $rang <= count($this->lines)) { // Update all rank of all other lines
-					$linecount = count($this->lines);
-					for ($ii = $rang; $ii <= $linecount; $ii++) {
-						$this->updateRangOfLine($this->lines[$ii - 1]->id, $ii + 1);
-					}
-				}
-
-				// Update denormalized information at the level of the order itself
-				$result = $this->update_price(1, 'auto', 1); // This method is designed to add line from user input so total calculation must be done using 'auto' mode.
-				if ($result > 0) {
-					$this->db->commit();
-					return $this->line->id;
-				} else {
-					$this->db->rollback();
-					return -1;
-				}
-			} else {
-				$this->error = $this->line->error;
-				$this->errors = $this->line->errors;
-				dol_syslog(get_class($this)."::addline error=".$this->error, LOG_ERR);
-				$this->db->rollback();
-				return -1;
-			}
-		}
-	}
-
 }
+
+

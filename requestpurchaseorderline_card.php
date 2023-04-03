@@ -17,9 +17,9 @@
  */
 
 /**
- *   	\file       requestpurchaseorder_card.php
+ *   	\file       requestpurchaseorderline_card.php
  *		\ingroup    requestorderwithoutvendor
- *		\brief      Page to create/edit/view requestpurchaseorder
+ *		\brief      Page to create/edit/view requestpurchaseorderline
  */
 
 //if (! defined('NOREQUIREDB'))              define('NOREQUIREDB', '1');				// Do not create database handler $db
@@ -76,14 +76,8 @@ if (!$res) {
 require_once DOL_DOCUMENT_ROOT.'/core/class/html.formcompany.class.php';
 require_once DOL_DOCUMENT_ROOT.'/core/class/html.formfile.class.php';
 require_once DOL_DOCUMENT_ROOT.'/core/class/html.formprojet.class.php';
-
-if (isModEnabled("product")) {
-	require_once DOL_DOCUMENT_ROOT.'/product/class/product.class.php';
-	require_once DOL_DOCUMENT_ROOT.'/product/stock/class/entrepot.class.php';
-}
-
-dol_include_once('/requestorderwithoutvendor/class/requestpurchaseorder.class.php');
-dol_include_once('/requestorderwithoutvendor/lib/requestorderwithoutvendor_requestpurchaseorder.lib.php');
+dol_include_once('/requestorderwithoutvendor/class/requestpurchaseorderline.class.php');
+dol_include_once('/requestorderwithoutvendor/lib/requestorderwithoutvendor_requestpurchaseorderline.lib.php');
 
 // Load translation files required by the page
 $langs->loadLangs(array("requestorderwithoutvendor@requestorderwithoutvendor", "other"));
@@ -102,10 +96,10 @@ $backtopageforcancel = GETPOST('backtopageforcancel', 'alpha');
 $dol_openinpopup = GETPOST('dol_openinpopup', 'aZ09');
 
 // Initialize technical objects
-$object = new RequestPurchaseOrder($db);
+$object = new RequestPurchaseOrderLine($db);
 $extrafields = new ExtraFields($db);
 $diroutputmassaction = $conf->requestorderwithoutvendor->dir_output.'/temp/massgeneration/'.$user->id;
-$hookmanager->initHooks(array('requestpurchaseordercard', 'globalcard')); // Note that conf->hooks_modules contains array
+$hookmanager->initHooks(array('requestpurchaseorderlinecard', 'globalcard')); // Note that conf->hooks_modules contains array
 
 // Fetch optionals attributes and labels
 $extrafields->fetch_name_optionals_label($object->table_element);
@@ -130,13 +124,13 @@ include DOL_DOCUMENT_ROOT.'/core/actions_fetchobject.inc.php'; // Must be includ
 
 // There is several ways to check permission.
 // Set $enablepermissioncheck to 1 to enable a minimum low level of checks
-$enablepermissioncheck = 1;
+$enablepermissioncheck = 0;
 if ($enablepermissioncheck) {
-	$permissiontoread = $user->hasRight('requestorderwithoutvendor', 'requestpurchaseorder', 'read');
-	$permissiontoadd = $user->hasRight('requestorderwithoutvendor', 'requestpurchaseorder', 'write'); // Used by the include of actions_addupdatedelete.inc.php and actions_lineupdown.inc.php
-	$permissiontodelete = $user->hasRight('requestorderwithoutvendor', 'requestpurchaseorder', 'delete') || ($permissiontoadd && isset($object->status) && $object->status == $object::STATUS_DRAFT);
-	$permissionnote = $user->hasRight('requestorderwithoutvendor', 'requestpurchaseorder', 'write'); // Used by the include of actions_setnotes.inc.php
-	$permissiondellink = $user->hasRight('requestorderwithoutvendor', 'requestpurchaseorder', 'write'); // Used by the include of actions_dellink.inc.php
+	$permissiontoread = $user->hasRight('requestorderwithoutvendor', 'requestpurchaseorderline', 'read');
+	$permissiontoadd = $user->hasRight('requestorderwithoutvendor', 'requestpurchaseorderline', 'write'); // Used by the include of actions_addupdatedelete.inc.php and actions_lineupdown.inc.php
+	$permissiontodelete = $user->hasRight('requestorderwithoutvendor', 'requestpurchaseorderline', 'delete') || ($permissiontoadd && isset($object->status) && $object->status == $object::STATUS_DRAFT);
+	$permissionnote = $user->hasRight('requestorderwithoutvendor', 'requestpurchaseorderline', 'write'); // Used by the include of actions_setnotes.inc.php
+	$permissiondellink = $user->hasRight('requestorderwithoutvendor', 'requestpurchaseorderline', 'write'); // Used by the include of actions_dellink.inc.php
 } else {
 	$permissiontoread = 1;
 	$permissiontoadd = 1; // Used by the include of actions_addupdatedelete.inc.php and actions_lineupdown.inc.php
@@ -145,7 +139,7 @@ if ($enablepermissioncheck) {
 	$permissiondellink = 1;
 }
 
-$upload_dir = $conf->requestorderwithoutvendor->multidir_output[isset($object->entity) ? $object->entity : 1].'/requestpurchaseorder';
+$upload_dir = $conf->requestorderwithoutvendor->multidir_output[isset($object->entity) ? $object->entity : 1].'/requestpurchaseorderline';
 
 // Security check (enable the most restrictive one)
 //if ($user->socid > 0) accessforbidden();
@@ -163,8 +157,7 @@ if (!$permissiontoread) {
 /*
  * Actions
  */
-global $senderissupplier;
-$senderissupplier=2;
+
 $parameters = array();
 $reshook = $hookmanager->executeHooks('doActions', $parameters, $object, $action); // Note that $action and $object may have been modified by some hooks
 if ($reshook < 0) {
@@ -174,19 +167,19 @@ if ($reshook < 0) {
 if (empty($reshook)) {
 	$error = 0;
 
-	$backurlforlist = dol_buildpath('/requestorderwithoutvendor/requestpurchaseorder_list.php', 1);
+	$backurlforlist = dol_buildpath('/requestorderwithoutvendor/requestpurchaseorderline_list.php', 1);
 
 	if (empty($backtopage) || ($cancel && empty($id))) {
 		if (empty($backtopage) || ($cancel && strpos($backtopage, '__ID__'))) {
 			if (empty($id) && (($action != 'add' && $action != 'create') || $cancel)) {
 				$backtopage = $backurlforlist;
 			} else {
-				$backtopage = dol_buildpath('/requestorderwithoutvendor/requestpurchaseorder_card.php', 1).'?id='.((!empty($id) && $id > 0) ? $id : '__ID__');
+				$backtopage = dol_buildpath('/requestorderwithoutvendor/requestpurchaseorderline_card.php', 1).'?id='.((!empty($id) && $id > 0) ? $id : '__ID__');
 			}
 		}
 	}
 
-	$triggermodname = 'REQUESTORDERWITHOUTVENDOR_REQUESTPURCHASEORDER_MODIFY'; // Name of trigger action code to execute when we modify record
+	$triggermodname = 'REQUESTORDERWITHOUTVENDOR_REQUESTPURCHASEORDERLINE_MODIFY'; // Name of trigger action code to execute when we modify record
 
 	// Actions cancel, add, update, update_extras, confirm_validate, confirm_delete, confirm_deleteline, confirm_clone, confirm_close, confirm_setdraft, confirm_reopen
 	include DOL_DOCUMENT_ROOT.'/core/actions_addupdatedelete.inc.php';
@@ -203,237 +196,6 @@ if (empty($reshook)) {
 	// Action to build doc
 	include DOL_DOCUMENT_ROOT.'/core/actions_builddoc.inc.php';
 
-	// check for object ID
-	if ($action == 'addline' && $permissiontoadd) {
-		$db->begin();
-
-		$langs->load('errors');
-		$error = 0;
-
-		// Set if we used free entry or predefined product
-		$predef = '';
-		$product_desc = (GETPOSTISSET('dp_desc') ? GETPOST('dp_desc', 'restricthtml') : '');
-		$date_start = dol_mktime(GETPOST('date_start'.$predef.'hour'), GETPOST('date_start'.$predef.'min'), GETPOST('date_start'.$predef.'sec'), GETPOST('date_start'.$predef.'month'), GETPOST('date_start'.$predef.'day'), GETPOST('date_start'.$predef.'year'));
-		$date_end = dol_mktime(GETPOST('date_end'.$predef.'hour'), GETPOST('date_end'.$predef.'min'), GETPOST('date_end'.$predef.'sec'), GETPOST('date_end'.$predef.'month'), GETPOST('date_end'.$predef.'day'), GETPOST('date_end'.$predef.'year'));
-
-		$prod_entry_mode = GETPOST('prod_entry_mode');
-		if ($prod_entry_mode == 'free') {
-			$idprod = 0;
-		} else {
-			$idprod = GETPOST('idprod', 'int');
-		}
-		$tva_tx = (GETPOST('tva_tx') ? GETPOST('tva_tx') : 0);		// Can be '1.2' or '1.2 (CODE)'
-
-		$price_ht = price2num(GETPOST('price_ht'), 'MU', 2);
-		$price_ht_devise = price2num(GETPOST('multicurrency_price_ht'), 'CU', 2);
-		$price_ttc = price2num(GETPOST('price_ttc'), 'MU', 2);
-		$price_ttc_devise = price2num(GETPOST('multicurrency_price_ttc'), 'CU', 2);
-		$qty = price2num(GETPOST('qty'.$predef, 'alpha'), 'MS');
-
-		$remise_percent = (GETPOSTISSET('remise_percent'.$predef) ? price2num(GETPOST('remise_percent'.$predef, 'alpha'), '', 2) : 0);
-		if (empty($remise_percent)) {
-			$remise_percent = 0;
-		}
-
-		// Extrafields
-		$extralabelsline = $extrafields->fetch_name_optionals_label($object->table_element_line);
-		$array_options = $extrafields->getOptionalsFromPost($object->table_element_line, $predef);
-		// Unset extrafield
-		if (is_array($extralabelsline)) {
-			// Get extra fields
-			foreach ($extralabelsline as $key => $value) {
-				unset($_POST["options_".$key]);
-			}
-		}
-
-		if ($prod_entry_mode == 'free' && GETPOST('price_ht') < 0 && $qty < 0) {
-			setEventMessages($langs->trans('ErrorBothFieldCantBeNegative', $langs->transnoentitiesnoconv('UnitPrice'), $langs->transnoentitiesnoconv('Qty')), null, 'errors');
-			$error++;
-		}
-		if ($prod_entry_mode == 'free' && !GETPOST('idprodfournprice') && GETPOST('type') < 0) {
-			setEventMessages($langs->trans('ErrorFieldRequired', $langs->transnoentitiesnoconv('Type')), null, 'errors');
-			$error++;
-		}
-		if ($prod_entry_mode == 'free' && GETPOST('price_ht') === '' && GETPOST('price_ttc') === '' && $price_ht_devise === '') { // Unit price can be 0 but not ''
-			setEventMessages($langs->trans('ErrorFieldRequired', $langs->transnoentitiesnoconv('UnitPrice')), null, 'errors');
-			$error++;
-		}
-		if ($prod_entry_mode == 'free' && !GETPOST('dp_desc')) {
-			setEventMessages($langs->trans('ErrorFieldRequired', $langs->transnoentitiesnoconv('Description')), null, 'errors');
-			$error++;
-		}
-		if (GETPOST('qty', 'alpha') == '') {	// 0 is allowed for order
-			setEventMessages($langs->trans('ErrorFieldRequired', $langs->transnoentitiesnoconv('Qty')), null, 'errors');
-			$error++;
-		}
-
-		if (!$error && isModEnabled('variants') && $prod_entry_mode != 'free') {
-			if ($combinations = GETPOST('combinations', 'array')) {
-				//Check if there is a product with the given combination
-				$prodcomb = new ProductCombination($db);
-
-				if ($res = $prodcomb->fetchByProductCombination2ValuePairs($idprod, $combinations)) {
-					$idprod = $res->fk_product_child;
-				} else {
-					setEventMessages($langs->trans('ErrorProductCombinationNotFound'), null, 'errors');
-					$error++;
-				}
-			}
-		}
-
-		if ($prod_entry_mode != 'free' && empty($error)) {	// With combolist mode idprodfournprice is > 0 or -1. With autocomplete, idprodfournprice is > 0 or ''
-			$productsupplier = new Product($db);
-
-			$idprod = 0;
-			if (GETPOST('idprodfournprice', 'alpha') == -1 || GETPOST('idprodfournprice', 'alpha') == '') {
-				$idprod = -99; // Same behaviour than with combolist. When not select idprodfournprice is now -99 (to avoid conflict with next action that may return -1, -2, ...)
-			}
-
-			$reg = array();
-			if (preg_match('/^idprod_([0-9]+)$/', GETPOST('idprodfournprice', 'alpha'), $reg)) {
-				$idprod = $reg[1];
-				$res = $productsupplier->fetch($idprod); // Load product from its id
-				// Call to init some price properties of $productsupplier
-				// So if a supplier price already exists for another thirdparty (first one found), we use it as reference price
-				if (!empty($conf->global->SUPPLIER_TAKE_FIRST_PRICE_IF_NO_PRICE_FOR_CURRENT_SUPPLIER)) {
-					$fksoctosearch = 0;
-					$productsupplier->get_buyprice(0, -1, $idprod, 'none', $fksoctosearch); // We force qty to -1 to be sure to find if a supplier price exist
-					if ($productsupplier->fourn_socid != $socid) {	// The price we found is for another supplier, so we clear supplier price
-						$productsupplier->ref_supplier = '';
-					}
-				} else {
-					$fksoctosearch = $object->thirdparty->id;
-					$productsupplier->get_buyprice(0, -1, $idprod, 'none', $fksoctosearch); // We force qty to -1 to be sure to find if a supplier price exist
-				}
-			} elseif (GETPOST('idprodfournprice', 'alpha') > 0) {
-				$qtytosearch = $qty; // Just to see if a price exists for the quantity. Not used to found vat.
-				//$qtytosearch = -1;	 // We force qty to -1 to be sure to find if a supplier price exist
-				$idprod = $productsupplier->get_buyprice(GETPOST('idprodfournprice', 'alpha'), $qtytosearch);
-				$res = $productsupplier->fetch($idprod);
-			}
-
-			if ($idprod > 0) {
-				$label = $productsupplier->label;
-
-				// Define output language
-				if (getDolGlobalInt('MAIN_MULTILANGS') && !empty($conf->global->PRODUIT_TEXTS_IN_THIRDPARTY_LANGUAGE)) {
-					$outputlangs = $langs;
-					$newlang = '';
-					if (empty($newlang) && GETPOST('lang_id', 'aZ09')) {
-						$newlang = GETPOST('lang_id', 'aZ09');
-					}
-					if (empty($newlang)) {
-						$newlang = $object->thirdparty->default_lang;
-					}
-					if (!empty($newlang)) {
-						$outputlangs = new Translate("", $conf);
-						$outputlangs->setDefaultLang($newlang);
-					}
-					$desc = (!empty($productsupplier->multilangs[$outputlangs->defaultlang]["description"])) ? $productsupplier->multilangs[$outputlangs->defaultlang]["description"] : $productsupplier->description;
-				} else {
-					$desc = $productsupplier->description;
-				}
-				// if we use supplier description of the products
-				if (!empty($productsupplier->desc_supplier) && !empty($conf->global->PRODUIT_FOURN_TEXTS)) {
-					$desc = $productsupplier->desc_supplier;
-				}
-
-				//If text set in desc is the same as product descpription (as now it's preloaded) whe add it only one time
-				if (trim($product_desc) == trim($desc) && !empty($conf->global->PRODUIT_AUTOFILL_DESC)) {
-					$product_desc='';
-				}
-
-				if (!empty($product_desc) && !empty($conf->global->MAIN_NO_CONCAT_DESCRIPTION)) {
-					$desc = $product_desc;
-				}
-				if (!empty($product_desc) && trim($product_desc) != trim($desc)) {
-					$desc = dol_concatdesc($desc, $product_desc, '', !empty($conf->global->MAIN_CHANGE_ORDER_CONCAT_DESCRIPTION));
-				}
-
-				$ref_supplier = $productsupplier->ref_supplier;
-
-				// Get vat rate
-				$tva_npr = 0;
-				if (!GETPOSTISSET('tva_tx') && !empty($object->thirdparty)) {	// If vat rate not provided from the form (the form has the priority)
-					$tva_tx = get_default_tva($object->thirdparty, $mysoc, $productsupplier->id, GETPOST('idprodfournprice', 'alpha'));
-					$tva_npr = get_default_npr($object->thirdparty, $mysoc, $productsupplier->id, GETPOST('idprodfournprice', 'alpha'));
-					if (empty($tva_tx)) {
-						$tva_npr = 0;
-					}
-				}
-				
-				if(!empty($object->thirdparty)){		
-					$localtax1_tx = get_localtax($tva_tx, 1, $mysoc, $object->thirdparty, $tva_npr);
-					$localtax2_tx = get_localtax($tva_tx, 2, $mysoc, $object->thirdparty, $tva_npr);
-				}
-
-				$type = $productsupplier->type;
-				if (GETPOST('price_ht') != '' || GETPOST('price_ht_devise') != '') {
-					$price_base_type = 'HT';
-					$pu = price2num($price_ht, 'MU');
-					$pu_devise = price2num($price_ht_devise, 'CU');
-				} elseif (GETPOST('price_ttc') != '' || GETPOST('price_ttc_devise') != '') {
-					$price_base_type = 'TTC';
-					$pu = price2num($price_ttc, 'MU');
-					$pu_devise = price2num($price_ttc_devise, 'CU');
-				} else {
-					$price_base_type = ($productsupplier->fourn_price_base_type ? $productsupplier->fourn_price_base_type : 'HT');
-					if (empty($object->multicurrency_code) || ($productsupplier->fourn_multicurrency_code != $object->multicurrency_code)) {	// If object is in a different currency and price not in this currency
-						$pu = $productsupplier->fourn_pu;
-						$pu_devise = 0;
-					} else {
-						$pu = $productsupplier->fourn_pu;
-						$pu_devise = $productsupplier->fourn_multicurrency_unitprice;
-					}
-				}
-
-				if (empty($pu)) {
-					$pu = 0; // If pu is '' or null, we force to have a numeric value
-				}
-				// add warehouse id and PR id
-				$result = $object->addline(
-					$object->fk_warehouse,
-					$object->$id,
-					$desc,
-					($price_base_type == 'HT' ? $pu : 0),
-					$qty,
-					$tva_tx,
-					$localtax1_tx,
-					$localtax2_tx,
-					$idprod,
-					$productsupplier->product_fourn_price_id,
-					$ref_supplier,
-					$remise_percent,
-					$price_base_type,
-					($price_base_type == 'TTC' ? $pu : 0),
-					$type,
-					$tva_npr,
-					'',
-					$date_start,
-					$date_end,
-					$array_options,
-					$productsupplier->fk_unit,
-					$pu_devise,
-					'',
-					0,
-					min($rank, count($object->lines) + 1)
-				);
-			}
-			if ($idprod == -99 || $idprod == 0) {
-				// Product not selected
-				$error++;
-				$langs->load("errors");
-				setEventMessages($langs->trans("ErrorFieldRequired", $langs->transnoentitiesnoconv("ProductOrService")), null, 'errors');
-			}
-			if ($idprod == -1) {
-				// Quantity too low
-				$error++;
-				$langs->load("errors");
-				setEventMessages($langs->trans("ErrorQtyTooLowForThisSupplier"), null, 'errors');
-			}
-		}
-	}
-
 	if ($action == 'set_thirdparty' && $permissiontoadd) {
 		$object->setValueFrom('fk_soc', GETPOST('fk_soc', 'int'), '', '', 'date', '', $user, $triggermodname);
 	}
@@ -441,6 +203,11 @@ if (empty($reshook)) {
 		$object->setProject(GETPOST('projectid', 'int'));
 	}
 
+	// Actions to send emails
+	$triggersendname = 'REQUESTORDERWITHOUTVENDOR_REQUESTPURCHASEORDERLINE_SENTBYMAIL';
+	$autocopy = 'MAIN_MAIL_AUTOCOPY_REQUESTPURCHASEORDERLINE_TO';
+	$trackid = 'requestpurchaseorderline'.$object->id;
+	include DOL_DOCUMENT_ROOT.'/core/actions_sendmails.inc.php';
 }
 
 
@@ -456,7 +223,7 @@ $form = new Form($db);
 $formfile = new FormFile($db);
 $formproject = new FormProjets($db);
 
-$title = $langs->trans("RequestPurchaseOrder");
+$title = $langs->trans("RequestPurchaseOrderLine");
 $help_url = '';
 llxHeader('', $title, $help_url);
 
@@ -482,7 +249,7 @@ if ($action == 'create') {
 		accessforbidden('NotEnoughPermissions', 0, 1);
 	}
 
-	print load_fiche_titre($langs->trans("NewObject", $langs->transnoentitiesnoconv("RequestPurchaseOrder")), '', 'object_'.$object->picto);
+	print load_fiche_titre($langs->trans("NewObject", $langs->transnoentitiesnoconv("RequestPurchaseOrderLine")), '', 'object_'.$object->picto);
 
 	print '<form method="POST" action="'.$_SERVER["PHP_SELF"].'">';
 	print '<input type="hidden" name="token" value="'.newToken().'">';
@@ -520,7 +287,7 @@ if ($action == 'create') {
 
 // Part to edit record
 if (($id || $ref) && $action == 'edit') {
-	print load_fiche_titre($langs->trans("RequestPurchaseOrder"), '', 'object_'.$object->picto);
+	print load_fiche_titre($langs->trans("RequestPurchaseOrderLine"), '', 'object_'.$object->picto);
 
 	print '<form method="POST" action="'.$_SERVER["PHP_SELF"].'">';
 	print '<input type="hidden" name="token" value="'.newToken().'">';
@@ -533,8 +300,8 @@ if (($id || $ref) && $action == 'edit') {
 		print '<input type="hidden" name="backtopageforcancel" value="'.$backtopageforcancel.'">';
 	}
 
-	print dol_get_fiche_head('');
-	
+	print dol_get_fiche_head();
+
 	print '<table class="border centpercent tableforfieldedit">'."\n";
 
 	// Common attributes
@@ -554,15 +321,15 @@ if (($id || $ref) && $action == 'edit') {
 
 // Part to show record
 if ($object->id > 0 && (empty($action) || ($action != 'edit' && $action != 'create'))) {
-	$head = requestpurchaseorderPrepareHead($object);
+	$head = requestpurchaseorderlinePrepareHead($object);
 
-	print dol_get_fiche_head($head, 'card', $langs->trans("RequestPurchaseOrder"), -1, $object->picto);
+	print dol_get_fiche_head($head, 'card', $langs->trans("RequestPurchaseOrderLine"), -1, $object->picto);
 
 	$formconfirm = '';
 
 	// Confirmation to delete
 	if ($action == 'delete') {
-		$formconfirm = $form->formconfirm($_SERVER["PHP_SELF"].'?id='.$object->id, $langs->trans('DeleteRequestPurchaseOrder'), $langs->trans('ConfirmDeleteObject'), 'confirm_delete', '', 0, 1);
+		$formconfirm = $form->formconfirm($_SERVER["PHP_SELF"].'?id='.$object->id, $langs->trans('DeleteRequestPurchaseOrderLine'), $langs->trans('ConfirmDeleteObject'), 'confirm_delete', '', 0, 1);
 	}
 	// Confirmation to delete line
 	if ($action == 'deleteline') {
@@ -578,13 +345,13 @@ if ($object->id > 0 && (empty($action) || ($action != 'edit' && $action != 'crea
 
 	// Confirmation of action xxxx (You can use it for xxx = 'close', xxx = 'reopen', ...)
 	if ($action == 'xxx') {
-		$text = $langs->trans('ConfirmActionRequestPurchaseOrder', $object->ref);
+		$text = $langs->trans('ConfirmActionRequestPurchaseOrderLine', $object->ref);
 		/*if (isModEnabled('notification'))
 		{
 			require_once DOL_DOCUMENT_ROOT . '/core/class/notify.class.php';
 			$notify = new Notify($db);
 			$text .= '<br>';
-			$text .= $notify->confirmMessage('REQUESTPURCHASEORDER_CLOSE', $object->socid, $object);
+			$text .= $notify->confirmMessage('REQUESTPURCHASEORDERLINE_CLOSE', $object->socid, $object);
 		}*/
 
 		$formquestion = array();
@@ -617,7 +384,7 @@ if ($object->id > 0 && (empty($action) || ($action != 'edit' && $action != 'crea
 
 	// Object card
 	// ------------------------------------------------------------
-	$linkback = '<a href="'.dol_buildpath('/requestorderwithoutvendor/requestpurchaseorder_list.php', 1).'?restore_lastsearch_values=1'.(!empty($socid) ? '&socid='.$socid : '').'">'.$langs->trans("BackToList").'</a>';
+	$linkback = '<a href="'.dol_buildpath('/requestorderwithoutvendor/requestpurchaseorderline_list.php', 1).'?restore_lastsearch_values=1'.(!empty($socid) ? '&socid='.$socid : '').'">'.$langs->trans("BackToList").'</a>';
 
 	$morehtmlref = '<div class="refidno">';
 	/*
@@ -714,11 +481,11 @@ if ($object->id > 0 && (empty($action) || ($action != 'edit' && $action != 'crea
 			if ($action != 'editline') {
 				// Add products/services form
 
-				$parameters = array(1, $mysoc, $soc,"/custom/requestorderwithoutvendor/core/tpl/");
+				$parameters = array();
 				$reshook = $hookmanager->executeHooks('formAddObjectLine', $parameters, $object, $action); // Note that $action and $object may have been modified by hook
 				if ($reshook < 0) setEventMessages($hookmanager->error, $hookmanager->errors, 'errors');
 				if (empty($reshook))
-					$object->formAddObjectLine(1, $mysoc, $soc,"/custom/requestorderwithoutvendor/core/tpl/");
+					$object->formAddObjectLine(1, $mysoc, $soc);
 			}
 		}
 
@@ -748,7 +515,7 @@ if ($object->id > 0 && (empty($action) || ($action != 'edit' && $action != 'crea
 			}
 
 			// Back to draft
-			if ($object->status == $object::STATUS_ACCEPTED) {
+			if ($object->status == $object::STATUS_VALIDATED) {
 				print dolGetButtonAction('', $langs->trans('SetToDraft'), 'default', $_SERVER["PHP_SELF"].'?id='.$object->id.'&action=confirm_setdraft&confirm=yes&token='.newToken(), '', $permissiontoadd);
 			}
 
@@ -778,7 +545,7 @@ if ($object->id > 0 && (empty($action) || ($action != 'edit' && $action != 'crea
 				}
 			}
 			if ($permissiontoadd) {
-				if ($object->status == $object::STATUS_ACCEPTED) {
+				if ($object->status == $object::STATUS_VALIDATED) {
 					print dolGetButtonAction('', $langs->trans('Cancel'), 'default', $_SERVER['PHP_SELF'].'?id='.$object->id.'&action=close&token='.newToken(), '', $permissiontoadd);
 				} else {
 					print dolGetButtonAction('', $langs->trans('Re-Open'), 'default', $_SERVER['PHP_SELF'].'?id='.$object->id.'&action=reopen&token='.newToken(), '', $permissiontoadd);
@@ -813,11 +580,11 @@ if ($object->id > 0 && (empty($action) || ($action != 'edit' && $action != 'crea
 			$urlsource = $_SERVER["PHP_SELF"]."?id=".$object->id;
 			$genallowed = $permissiontoread; // If you can read, you can build the PDF to read content
 			$delallowed = $permissiontoadd; // If you can create/edit, you can remove a file on card
-			print $formfile->showdocuments('requestorderwithoutvendor:RequestPurchaseOrder', $object->element.'/'.$objref, $filedir, $urlsource, $genallowed, $delallowed, $object->model_pdf, 1, 0, 0, 28, 0, '', '', '', $langs->defaultlang);
+			print $formfile->showdocuments('requestorderwithoutvendor:RequestPurchaseOrderLine', $object->element.'/'.$objref, $filedir, $urlsource, $genallowed, $delallowed, $object->model_pdf, 1, 0, 0, 28, 0, '', '', '', $langs->defaultlang);
 		}
 
 		// Show links to link elements
-		$linktoelem = $form->showLinkToObjectBlock($object, null, array('requestpurchaseorder'));
+		$linktoelem = $form->showLinkToObjectBlock($object, null, array('requestpurchaseorderline'));
 		$somethingshown = $form->showLinkedObjectBlock($object, $linktoelem);
 
 
@@ -825,7 +592,7 @@ if ($object->id > 0 && (empty($action) || ($action != 'edit' && $action != 'crea
 
 		$MAXEVENT = 10;
 
-		$morehtmlcenter = dolGetButtonTitle($langs->trans('SeeAll'), '', 'fa fa-bars imgforviewmode', dol_buildpath('/requestorderwithoutvendor/requestpurchaseorder_agenda.php', 1).'?id='.$object->id);
+		$morehtmlcenter = dolGetButtonTitle($langs->trans('SeeAll'), '', 'fa fa-bars imgforviewmode', dol_buildpath('/requestorderwithoutvendor/requestpurchaseorderline_agenda.php', 1).'?id='.$object->id);
 
 		// List of actions on element
 		include_once DOL_DOCUMENT_ROOT.'/core/class/html.formactions.class.php';
@@ -841,10 +608,10 @@ if ($object->id > 0 && (empty($action) || ($action != 'edit' && $action != 'crea
 	}
 
 	// Presend form
-	$modelmail = 'requestpurchaseorder';
+	$modelmail = 'requestpurchaseorderline';
 	$defaulttopic = 'InformationMessage';
 	$diroutput = $conf->requestorderwithoutvendor->dir_output;
-	$trackid = 'requestpurchaseorder'.$object->id;
+	$trackid = 'requestpurchaseorderline'.$object->id;
 
 	include DOL_DOCUMENT_ROOT.'/core/tpl/card_presend.tpl.php';
 }

@@ -137,7 +137,7 @@ class mod_requestpurchaseorder_advanced extends ModeleNumRefRequestPurchaseOrder
 			return 0;
 		}
 
-		$date = $object->date;
+		$date = $object->date_creation;
 
 		$numFinal = get_next_value($db, $mask, 'requestorderwithoutvendor_requestpurchaseorder', 'ref', '', null, $date,'next',false);
 

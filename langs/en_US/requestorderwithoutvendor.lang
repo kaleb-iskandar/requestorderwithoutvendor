@@ -52,3 +52,10 @@ MyPageName = My page name
 #
 MyWidget = My widget
 MyWidgetDescription = My widget description
+
+#
+# Request Purchase Detail page
+#
+AddPurchaseRequestProductLine = Add products
+ChooseProductPlaceholder = Choose product
+MyPageName = My page name
