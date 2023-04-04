@@ -412,7 +412,7 @@ if (empty($reshook)) {
 					$date_start,
 					$date_end,
 					$array_options,
-					$productsupplier->fk_unit,
+					$productsupplier->fk_unit ? GETPOST('units', 'alpha') : 0,
 					$pu_devise,
 					'',
 					0,
@@ -432,6 +432,72 @@ if (empty($reshook)) {
 				setEventMessages($langs->trans("ErrorQtyTooLowForThisSupplier"), null, 'errors');
 			}
 		}
+		if (!$error && $result > 0) {
+			$db->commit();
+
+			$ret = $object->fetch($object->id); // Reload to get new records
+
+			// Define output language
+			if (empty($conf->global->MAIN_DISABLE_PDF_AUTOUPDATE)) {
+				$outputlangs = $langs;
+				$newlang = '';
+				if (getDolGlobalInt('MAIN_MULTILANGS') && empty($newlang)) {
+					$newlang = $object->thirdparty->default_lang;
+					if (GETPOST('lang_id', 'aZ09'))
+						$newlang = GETPOST('lang_id', 'aZ09');
+				}
+				if (!empty($newlang)) {
+					$outputlangs = new Translate("", $conf);
+					$outputlangs->setDefaultLang($newlang);
+				}
+				$model = $object->model_pdf;
+				$ret = $object->fetch($id); // Reload to get new records
+
+				$result = $object->generateDocument($model, $outputlangs, $hidedetails, $hidedesc, $hideref);
+				if ($result < 0) {
+					dol_print_error($db, $result);
+				}
+			}
+
+			unset($_POST ['prod_entry_mode']);
+
+			unset($_POST['qty']);
+			unset($_POST['type']);
+			unset($_POST['remise_percent']);
+			unset($_POST['pu']);
+			unset($_POST['price_ht']);
+			unset($_POST['multicurrency_price_ht']);
+			unset($_POST['price_ttc']);
+			unset($_POST['fourn_ref']);
+			unset($_POST['tva_tx']);
+			unset($_POST['label']);
+			unset($localtax1_tx);
+			unset($localtax2_tx);
+			unset($_POST['np_marginRate']);
+			unset($_POST['np_markRate']);
+			unset($_POST['dp_desc']);
+			unset($_POST['idprodfournprice']);
+			unset($_POST['units']);
+
+			unset($_POST['date_starthour']);
+			unset($_POST['date_startmin']);
+			unset($_POST['date_startsec']);
+			unset($_POST['date_startday']);
+			unset($_POST['date_startmonth']);
+			unset($_POST['date_startyear']);
+			unset($_POST['date_endhour']);
+			unset($_POST['date_endmin']);
+			unset($_POST['date_endsec']);
+			unset($_POST['date_endday']);
+			unset($_POST['date_endmonth']);
+			unset($_POST['date_endyear']);
+		} else {
+			$db->rollback();
+			setEventMessages($object->error, $object->errors, 'errors');
+		}
+
+		$action = '';
+
 	}
 
 	if ($action == 'set_thirdparty' && $permissiontoadd) {
@@ -576,6 +642,10 @@ if ($object->id > 0 && (empty($action) || ($action != 'edit' && $action != 'crea
 		$formconfirm = $form->formconfirm($_SERVER["PHP_SELF"].'?id='.$object->id, $langs->trans('ToClone'), $langs->trans('ConfirmCloneAsk', $object->ref), 'confirm_clone', $formquestion, 'yes', 1);
 	}
 
+	if ($action == 'ask_deleteline') {
+		$formconfirm = $form->formconfirm($_SERVER["PHP_SELF"].'?id='.$object->id.'&lineid='.$lineid, $langs->trans('DeleteProductLine'), $langs->trans('ConfirmDeleteProductLine'), 'confirm_deleteline', '', 0, 1);
+   	}
+
 	// Confirmation of action xxxx (You can use it for xxx = 'close', xxx = 'reopen', ...)
 	if ($action == 'xxx') {
 		$text = $langs->trans('ConfirmActionRequestPurchaseOrder', $object->ref);
@@ -677,16 +747,15 @@ if ($object->id > 0 && (empty($action) || ($action != 'edit' && $action != 'crea
 
 	print '<div class="clearboth"></div>';
 
-	print dol_get_fiche_end();
 
 
 	/*
 	 * Lines
 	 */
 
-	if (!empty($object->table_element_line)) {
+	// if (!empty($object->table_element_line)) {
 		// Show object lines
-		$result = $object->getLinesArray();
+		// $result = $object->getLinesArray();
 
 		print '	<form name="addproduct" id="addproduct" action="'.$_SERVER["PHP_SELF"].'?id='.$object->id.(($action != 'editline') ? '' : '#line_'.GETPOST('lineid', 'int')).'" method="POST">
 		<input type="hidden" name="token" value="' . newToken().'">
@@ -701,12 +770,13 @@ if ($object->id > 0 && (empty($action) || ($action != 'edit' && $action != 'crea
 		}
 
 		print '<div class="div-table-responsive-no-min">';
+		
 		if (!empty($object->lines) || ($object->status == $object::STATUS_DRAFT && $permissiontoadd && $action != 'selectlines' && $action != 'editline')) {
-			print '<table id="tablelines" class="noborder noshadow" width="100%">';
+			print '<table id="tablelines" class="noborder noshadow centpercent">';
 		}
 
 		if (!empty($object->lines)) {
-			$object->printObjectLines($action, $mysoc, null, GETPOST('lineid', 'int'), 1);
+			$object->printObjectLines($action, $mysoc, null, GETPOST('lineid', 'int'), 1,'/custom/requestorderwithoutvendor/core/tpl/');
 		}
 
 		// Form to add new line
@@ -728,7 +798,9 @@ if ($object->id > 0 && (empty($action) || ($action != 'edit' && $action != 'crea
 		print '</div>';
 
 		print "</form>\n";
-	}
+		
+		print dol_get_fiche_end();
+	// }
 
 
 	// Buttons for actions

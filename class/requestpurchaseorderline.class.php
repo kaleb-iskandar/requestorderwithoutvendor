@@ -30,7 +30,7 @@ require_once DOL_DOCUMENT_ROOT.'/core/class/commonobject.class.php';
 /**
  * Class for RequestPurchaseOrderLine
  */
-class RequestPurchaseOrderLine extends CommonObject
+class RequestPurchaseOrderLine extends CommonObjectLine
 {
 	/**
 	 * @var string ID of module.
@@ -1133,6 +1133,8 @@ class RequestPurchaseOrderLine extends CommonObject
 
 		return $error;
 	}
+	
+
 }
 
 

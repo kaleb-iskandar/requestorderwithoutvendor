@@ -65,9 +65,10 @@ class RequestPurchaseOrder extends CommonObject
 	public $picto = 'fa-file';
 
 
+	const STATUS_CANCELED = -2;
+	const STATUS_REJECTED = -1;
 	const STATUS_DRAFT = 0;
 	const STATUS_ACCEPTED = 1;
-	const STATUS_REJECTED = 2;
 	const STATUS_ORDERED = 3;
 	const STATUS_PROCESSED_PARTIALLY = 4;
 	const STATUS_PROCESSED_ALL = 5;
@@ -75,7 +76,6 @@ class RequestPurchaseOrder extends CommonObject
 	const STATUS_DELIVERED_ALL = 7;
 	const STATUS_PAID_PARTIALLY = 8;
 	const STATUS_PAID_ALL = 9;
-	const STATUS_CANCELED = 10;
 
 
 	/**
@@ -1425,5 +1425,5 @@ class RequestPurchaseOrder extends CommonObject
 			}
 		}
 	}
-
+	
 }

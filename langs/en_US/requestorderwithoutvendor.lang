@@ -18,9 +18,9 @@
 #
 
 # Module label 'ModuleRequestOrderWithoutVendorName'
-ModuleRequestOrderWithoutVendorName = RequestOrderWithoutVendor
+ModuleRequestOrderWithoutVendorName = Request Order Without Vendor
 # Module description 'ModuleRequestOrderWithoutVendorDesc'
-ModuleRequestOrderWithoutVendorDesc = RequestOrderWithoutVendor description
+ModuleRequestOrderWithoutVendorDesc = This module allow creation of an order only with products selection and quantity define without the needs to choose a supplier for any particular product. With this module you can add flexibility to procurement user to split the order based on their prefered supplier and set product prices as needed.
 
 #
 # Admin page
@@ -59,3 +59,4 @@ MyWidgetDescription = My widget description
 AddPurchaseRequestProductLine = Add products
 ChooseProductPlaceholder = Choose product
 MyPageName = My page name
+ProductLineActions = Actions

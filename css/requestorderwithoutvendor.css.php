@@ -109,4 +109,6 @@ div.mainmenu.requestorderwithoutvendor {
 .minwidth400imp{
 	max-width:400px !important;
 }
-
+.minwidth120px{
+	min-width:120px !important;
+}

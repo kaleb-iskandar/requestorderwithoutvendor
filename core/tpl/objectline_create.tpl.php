@@ -143,10 +143,10 @@ if ($nolinesbefore) {
 		<?php } 
 		}
 		?>		
-		<td class="linecolqty right"><?php echo $langs->trans('Qty'); ?></td>
+		<td class="linecolqty center"><?php echo $langs->trans('Qty'); ?></td>
 		<?php
 		if (!empty($conf->global->PRODUCT_USE_UNITS)) {
-			print '<td class="linecoluseunit left">';
+			print '<td class="linecoluseunit center minwidth120px">';
 			print '<span id="title_units">';
 			print $langs->trans('Unit');
 			print '</span></td>';
@@ -181,7 +181,7 @@ if ($nolinesbefore) {
 			}
 		}
 		?>
-		<td class="linecoledit" colspan="<?php echo $colspan; ?>">&nbsp;</td>
+		<td class="linecoledit center minwidth120px" colspan="<?php echo $colspan; ?>"><?php echo $langs->trans('ProductLineActions') ?></td>
 	</tr>
 	<?php
 }
@@ -382,13 +382,13 @@ if ($nolinesbefore) {
 		$coldisplay++;
 	}
 	?>
-	<td class="nobottom linecolqty right">
+	<td class="nobottom linecolqty center">
 	<input type="text" name="qty" id="qty" class="flat width40 right" value="<?php echo (GETPOSTISSET("qty") ? GETPOST("qty", 'alpha', 2) : 1); ?>">
 	</td>
 	<?php
 	if (!empty($conf->global->PRODUCT_USE_UNITS)) {
 		$coldisplay++;
-		print '<td class="nobottom linecoluseunit left">';
+		print '<td class="nobottom linecoluseunit center">';
 		print $form->selectUnits(empty($line->fk_unit) ? $conf->global->PRODUCT_USE_UNITS : $line->fk_unit, "units");
 		print '</td>';
 	}
@@ -434,7 +434,7 @@ if ($nolinesbefore) {
 		$coldisplay += $colspan;
 	}
 	?>
-	<td class="nobottom linecoledit center valignmiddle" colspan="<?php echo $colspan; ?>">
+	<td class="nobottom linecoledit minwidth120px center valignmiddle" colspan="<?php echo $colspan; ?>">
 		<input type="submit" class="button reposition" value="<?php echo $langs->trans('Add'); ?>" name="addline" id="addline">
 	</td>
 </tr>
@@ -1114,7 +1114,7 @@ if (!empty($usemargins) && $user->rights->margins->creer) {
 		<?php } ?>
 		jQuery("#fourn_ref, #tva_tx, #title_vat").hide();
 		/* jQuery("#title_fourn_ref").hide(); */
-		jQuery("#np_marginRate, #np_markRate, .np_marginRate, .np_markRate, #units, #title_units").hide();
+		jQuery("#np_marginRate, #np_markRate, .np_marginRate, .np_markRate").hide();
 		jQuery("#buying_price").show();
 		jQuery('#trlinefordates, .divlinefordates').show();
 	}
